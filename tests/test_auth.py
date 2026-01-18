@@ -22,3 +22,8 @@ def test_password_hashing():
     assert hashed != password
     assert verify_password(password, hashed) is True
     assert verify_password("wrongpassword", hashed) is False
+
+
+def test_decode_invalid_token_returns_none():
+    invalid = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.invalid.signature"
+    assert decode_token(invalid) is None
