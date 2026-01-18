@@ -13,10 +13,21 @@ cloudinary.config(
 )
 
 
-app = FastAPI()
+app = FastAPI(
+    title="OFWA Dashly",
+    description=(
+        "A FastAPI-based dashboard application for analyzing CSV datasets using "
+        "generic statistical methods."
+    ),
+    openapi_tags=[
+        {"name": "Health Check"},
+        {"name": "Home"},
+        {"name": "Users"},
+    ]
+)
 
 
-@app.get("/")
+@app.get("/", tags=["Home"])
 def get_home():
     return {"message": "You are on the home page"}
 

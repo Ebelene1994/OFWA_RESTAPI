@@ -25,3 +25,12 @@ class DatasetInDB(DatasetBase):
 
 class Dataset(DatasetInDB):
     pass
+
+
+class DatasetMetadata(BaseModel):
+    dataset_id: str
+    original_filename: str
+    cloudinary_url: str
+    uploaded_by: str
+    upload_timestamp: datetime
+    analysis_parameters: Optional[Dict[str, Any]] = None
