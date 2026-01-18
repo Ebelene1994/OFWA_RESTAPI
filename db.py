@@ -45,3 +45,5 @@ ofwa_dash_db = db.client["ofwa_dash"]
 
 # Pick a collection to operate on
 users_collection = ofwa_dash_db["users"]
+datasets_collection = ofwa_dash_db["datasets"]
+analysis_logs_collection = ofwa_dash_db["analysis_logs"]

@@ -4,9 +4,11 @@ from datetime import datetime, timezone
 import json
 from services.cloudinary_service import CloudinaryService
 from services.csv_analysis_service import CSVAnalysisService
+from services.analysis_logger import analysis_logger
 from models.dataset_model import Dataset
 from dependencies.authz import require_analyst_role
 from db import ofwa_dash_db
+import uuid
 
 datasets_collection = ofwa_dash_db["datasets"]
 
@@ -77,12 +79,36 @@ async def upload_dataset(
         }
         insert_res = await datasets_collection.insert_one(doc)
 
+        # Log success
+        analysis_id = str(uuid.uuid4())
+        await analysis_logger.log_success(
+            analysis_id=analysis_id,
+            dataset_id=str(insert_res.inserted_id),
+            analyst_user_id=user.get("id", ""),
+            parameters={"analysis_type": analysis_type, **parsed_params},
+            results=analysis,
+        )
+
         return {
             "message": "File uploaded and analyzed successfully",
             "url": upload_result.get("url"),
             "public_id": upload_result.get("public_id"),
             "dataset_id": str(insert_res.inserted_id),
+            "analysis_id": analysis_id,
             "analysis": analysis,
         }
     except Exception as e:
+        # Attempt to log failure
+        try:
+            failure_analysis_id = str(uuid.uuid4())
+            await analysis_logger.log_failure(
+                analysis_id=failure_analysis_id,
+                dataset_id="",
+                analyst_user_id=user.get("id", ""),
+                parameters={"analysis_type": analysis_type},
+                error=str(e),
+                results=None,
+            )
+        except Exception:
+            pass
         raise HTTPException(status_code=500, detail=str(e))

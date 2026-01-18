@@ -1,11 +1,16 @@
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 import cloudinary
+from dotenv import load_dotenv
 from config import settings
 from routes.users import users_router
 from routes import health, datasets, analysis
+from db import db
 
 
 # Configure cloudinary
+load_dotenv()
+
 cloudinary.config(
     cloud_name=settings.CLOUDINARY_CLOUD_NAME,
     api_key=settings.CLOUDINARY_API_KEY,
@@ -25,6 +30,25 @@ app = FastAPI(
         {"name": "Users"},
     ]
 )
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+@app.on_event("startup")
+async def on_startup():
+    print("OFWA Dashly API is running")
+
+@app.on_event("shutdown")
+async def on_shutdown():
+    try:
+        db.close()
+    except Exception:
+        pass
 
 
 @app.get("/", tags=["Home"])
